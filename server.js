@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 4000;
 
 app.use(express.static('public'));
 
@@ -32,3 +32,4 @@ app.listen(port, () => {
 
 console.log('Server code loaded successfully');
 
+export default app;
