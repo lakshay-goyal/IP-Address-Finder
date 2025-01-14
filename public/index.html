@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Address Lookup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --background-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode {
+            --primary-color: #818cf8;
+            --background-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --input-border: #4a4a4a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            position: relative; /* Added for absolute positioning context */
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--text-color);
+            padding: 15px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 10px var(--shadow-color);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            width: 400px;
+            max-width: 90%;
+            margin-bottom: 60px; /* Added to prevent overlap with the button */
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+        }
+
+        #result.hidden {
+            display: none;
+        }
+
+        #ip-address {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin: 0.5rem 0;
+            font-weight: bold;
+        }
+
+        #visit-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        #visit-link:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IP Address Lookup</h1>
+        <div class="input-group">
+            <label for="domain">Enter a domain:</label>
+            <input type="text" id="domain" placeholder="e.g., google.com">
+        </div>
+        <button onclick="lookupIP()" id="search-button">
+            <span>Search IP Address</span>
+        </button>
+        <div id="result" class="hidden">
+            <p>IP Address:</p>
+            <p id="ip-address"></p>
+            <a id="visit-link" href="#" target="_blank"></a>
+        </div>
+    </div>
+
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script>
+        let isDarkMode = false;
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const icon = document.querySelector('.dark-mode-toggle i');
+            
+            isDarkMode = !isDarkMode;
+            body.classList.toggle('dark-mode');
+            
+            if (isDarkMode) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        async function lookupIP() {
+            const domain = document.getElementById('domain').value;
+            const resultDiv = document.getElementById('result');
+            const ipAddressElement = document.getElementById('ip-address');
+            const visitLink = document.getElementById('visit-link');
+            const button = document.getElementById('search-button');
+            
+            // Show loading state
+            button.innerHTML = '<span class="loading"></span>Searching...';
+            button.disabled = true;
+
+            try {
+                const response = await fetch(`/lookup?domain=${encodeURIComponent(domain)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    ipAddressElement.textContent = `Error: ${data.error}`;
+                    visitLink.classList.add('hidden');
+                } else {
+                    const ipAddress = data.ip;
+                    ipAddressElement.textContent = ipAddress;
+                    visitLink.href = `http://${domain}`;
+                    visitLink.textContent = `Visit ${domain} (${ipAddress})`;
+                    visitLink.classList.remove('hidden');
+                }
+                resultDiv.classList.remove('hidden');
+            } catch (error) {
+                ipAddressElement.textContent = 'Error: Unable to perform lookup';
+                visitLink.classList.add('hidden');
+                resultDiv.classList.remove('hidden');
+            } finally {
+                // Reset button state
+                button.innerHTML = '<span>Search IP Address</span>';
+                button.disabled = false;
+            }
+        }
+
+        // Add keyboard support for the input field
+        document.getElementById('domain').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                lookupIP();
+            }
+        });
+    </script>
+</body>
+</html>
